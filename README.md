@@ -17,6 +17,7 @@ phpMyAdmin
 1. Run in command line or terminal `composer install`
 2. Create a `.env` file or rename `.env.example` to `.env` in the root of the project.
 3. Add database credentials and database name in `.env` file
-4. Change the `Document Root` of the webserver to point towards `public` directory of the project
-5. Give proper permissions to the project.
-6. Restart the server (Optional)
+4. Execute the command `php artisan migrate`.
+5. Change the `Document Root` of the webserver to point towards `public` directory of the project
+6. Give proper permissions to the project.
+7. Restart the server (Optional)
