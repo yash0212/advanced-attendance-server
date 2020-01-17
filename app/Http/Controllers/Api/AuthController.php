@@ -14,7 +14,6 @@ class AuthController extends Controller
             'name' => 'required|max:255',
             'password' => 'required|confirmed',
             'regno' => 'required|max:255',
-            'user_type' => 'in:student,guard,admin,teacher'
         ]);
         $validatedData["password"] = bcrypt($validatedData["password"]);
         $validatedData["user_type"] = $request->input("user_type");
