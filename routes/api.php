@@ -25,5 +25,9 @@ Route::group(['middleware' => ['auth:api', 'student']], function () {
     Route::post('/apply-outing', 'Api\LeaveOutingController@apply_outing');
     Route::post('/apply-leave', 'Api\LeaveOutingController@apply_leave');
 });
+Route::group(['middleware' => ['auth:api', 'admin']], function () {
+    Route::post('/update-outing', 'Api\LeaveOutingController@update_outing');
+    Route::post('/update-leave', 'Api\LeaveOutingController@update_leave');
+});
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');

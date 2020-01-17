@@ -67,5 +67,56 @@ class LeaveOutingController extends Controller
         return response()->json($create_result);
     }
 
-    
+    public function update_outing(Request $request)
+    {
+        $user = Auth::user();
+        $outing = Outing::where("id", $request->input("outing_id"))->first();
+        if($outing["status"] == -1 || $outing["status"] == 0){
+            switch(strtolower($request->input('status'))){
+                case "approved":{
+                    $outing->status = 1;
+                    break;
+                }
+                case "rejected":{
+                    $outing->status = 2;
+                    break;
+                }
+                default:{
+                    $outing->status = -1;
+                    break;
+                }
+            }
+            $outing->save();
+            return response()->json(['msg'=> 'Outing request\'s status updated successfully']);
+        }else{
+            return response()->json(['type'=>'error', 'msg'=>'Request is already approved/rejected']);
+        }
+    }
+
+    public function update_leave(Request $request)
+    {
+        $user = Auth::user();
+        $leave = Leave::where("id", $request->input("leave_id"))->first();
+        if($leave["status"] == -1 || $leave["status"] == 0){
+            switch(strtolower($request->input('status'))){
+                case "approved":{
+                    $outing->status = 1;
+                    break;
+                }
+                case "rejected":{
+                    $outing->status = 2;
+                    break;
+                }
+                default:{
+                    $outing->status = -1;
+                    break;
+                }
+            }
+            $leave->save();
+            return response()->json(["msg"=> "Leave request's status updated successfully"]);
+        }else{
+            return response()->json(['type'=>'error', 'msg'=>'Request is already approved/rejected']);
+        }
+    }
+
 }
