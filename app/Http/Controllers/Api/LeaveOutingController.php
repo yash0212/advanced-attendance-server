@@ -22,7 +22,7 @@ class LeaveOutingController extends Controller
         }else{
             return response('Unauthorized', 403);
         }
-        return response()->json($outing_requests);
+        return response()->json(["status" => "success", "data" => $outing_requests]);
     }
 
     public function fetch_leave(Request $request)
@@ -37,7 +37,7 @@ class LeaveOutingController extends Controller
         }else{
             return response('Unauthorized', 403);
         }
-        return response()->json($leave_requests);
+        return response()->json(["status" => "success", "data" => $leave_requests]);
     }
 
     public function apply_outing(Request $request)
@@ -52,7 +52,7 @@ class LeaveOutingController extends Controller
             'visit_to' => $request->input('visit_to'), 
             'reason' => $request->input('reason'),
         ]);
-        return response()->json($create_result);
+        return response()->json(["status" => "success", "data" => $create_result]);
     }
 
     public function apply_leave(Request $request)
@@ -64,7 +64,7 @@ class LeaveOutingController extends Controller
             'visit_to' => $request->input('visit_to'), 
             'reason' => $request->input('reason'),
         ]);
-        return response()->json($create_result);
+        return response()->json(["status" => "success", "data" => $create_result]);
     }
 
     public function update_outing(Request $request)
@@ -87,9 +87,9 @@ class LeaveOutingController extends Controller
                 }
             }
             $outing->save();
-            return response()->json(['msg'=> 'Outing request\'s status updated successfully']);
+            return response()->json(["status"=> "success", 'msg'=> 'Outing request\'s status updated successfully']);
         }else{
-            return response()->json(['type'=>'error', 'msg'=>'Request is already approved/rejected']);
+            return response()->json(['status'=>'error', 'msg'=>'Request is already approved/rejected']);
         }
     }
 
@@ -113,9 +113,9 @@ class LeaveOutingController extends Controller
                 }
             }
             $leave->save();
-            return response()->json(["msg"=> "Leave request's status updated successfully"]);
+            return response()->json(["status"=> "success", "msg"=> "Leave request's status updated successfully"]);
         }else{
-            return response()->json(['type'=>'error', 'msg'=>'Request is already approved/rejected']);
+            return response()->json(['status'=>'error', 'msg'=>'Request is already approved/rejected']);
         }
     }
 
