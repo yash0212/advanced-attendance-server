@@ -33,7 +33,7 @@ class LeaveOutingController extends Controller
         if($user["user_type"] == 0){
             $leave_requests = Leave::orderBy('updated_at')->take($limit)->offset($offset)->get();
         }else if($user["user_type"] == 1){
-            $leave_requests = $user->leaves()->latest('updated_at')->limit($limit)->offset($offset);
+            $leave_requests = $user->leaves()->select('id', 'out_date', 'in_date', 'visit_to', 'reason', 'status')->latest('updated_at')->limit($limit)->offset($offset)->get();
         }else{
             return response('Unauthorized', 403);
         }
