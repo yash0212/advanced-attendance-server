@@ -16,7 +16,7 @@ class LeaveOutingController extends Controller
         $limit = $request->input('length') ?? 15;
         $offset = $request->input('start') ?? 0;
         if($user["user_type"] == 0){
-            $outing_requests = Outing::orderBy('updated_at')->take($limit)->offset($offset)->get();
+            $outing_requests = Outing::with(['applied_by', 'approved_by'])->orderBy('updated_at','desc')->take($limit)->offset($offset)->get();
         }else if($user["user_type"] == 1){
             $outing_requests = $user->outings()->select('id', 'date', 'out_time', 'in_time', 'visit_to', 'reason', 'status')->latest('updated_at')->limit($limit)->offset($offset)->get();
         }else{
@@ -31,7 +31,7 @@ class LeaveOutingController extends Controller
         $limit = $request->input('length') ?? 15;
         $offset = $request->input('start') ?? 0;
         if($user["user_type"] == 0){
-            $leave_requests = Leave::orderBy('updated_at')->take($limit)->offset($offset)->get();
+            $leave_requests = Leave::with(['applied_by', 'approved_by'])->orderBy('updated_at')->take($limit)->offset($offset)->get();
         }else if($user["user_type"] == 1){
             $leave_requests = $user->leaves()->select('id', 'out_date', 'in_date', 'visit_to', 'reason', 'status')->latest('updated_at')->limit($limit)->offset($offset)->get();
         }else{
@@ -71,6 +71,8 @@ class LeaveOutingController extends Controller
     {
         $user = Auth::user();
         $outing = Outing::where("id", $request->input("outing_id"))->first();
+        $limit = $request->input('length') ?? 15;
+        $offset = $request->input('start') ?? 0;
         if($outing["status"] == -1 || $outing["status"] == 0){
             switch(strtolower($request->input('status'))){
                 case "approved":{
@@ -86,8 +88,10 @@ class LeaveOutingController extends Controller
                     break;
                 }
             }
+            $outing->approved_by = $user["id"];
             $outing->save();
-            return response()->json(["status"=> "success", 'msg'=> 'Outing request\'s status updated successfully']);
+            $outing_requests = Outing::with(['applied_by', 'approved_by'])->orderBy('updated_at','desc')->take($limit)->offset($offset)->get();
+            return response()->json(["status"=> "success", 'msg'=> 'Outing request\'s status updated successfully', 'data'=>$outing_requests]);
         }else{
             return response()->json(['status'=>'error', 'msg'=>'Request is already approved/rejected']);
         }
@@ -97,23 +101,27 @@ class LeaveOutingController extends Controller
     {
         $user = Auth::user();
         $leave = Leave::where("id", $request->input("leave_id"))->first();
+        $limit = $request->input('length') ?? 15;
+        $offset = $request->input('start') ?? 0;
         if($leave["status"] == -1 || $leave["status"] == 0){
             switch(strtolower($request->input('status'))){
                 case "approved":{
-                    $outing->status = 1;
+                    $leave->status = 1;
                     break;
                 }
                 case "rejected":{
-                    $outing->status = 2;
+                    $leave->status = 2;
                     break;
                 }
                 default:{
-                    $outing->status = -1;
+                    $leave->status = -1;
                     break;
                 }
             }
+            $leave->approved_by = $user["id"];
             $leave->save();
-            return response()->json(["status"=> "success", "msg"=> "Leave request's status updated successfully"]);
+            $leave_requests = Leave::with(['applied_by', 'approved_by'])->orderBy('updated_at','desc')->take($limit)->offset($offset)->get();
+            return response()->json(["status"=> "success", "msg"=> "Leave request's status updated successfully", "data"=>$leave_requests]);
         }else{
             return response()->json(['status'=>'error', 'msg'=>'Request is already approved/rejected']);
         }

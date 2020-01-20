@@ -11,10 +11,10 @@ class Leave extends Model
     ];
 
     function applied_by(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\User', 'applied_by');
     }
 
     function approved_by(){
-        return $this->belongsTo('App\User');
+        return $this->belongsTo('App\User', 'approved_by');
     }
 }
