@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Outing;
 use App\Leave;
 use Auth;
+use Illuminate\Validation\ValidationException;
 
 class LeaveOutingController extends Controller
 {
@@ -58,13 +59,28 @@ class LeaveOutingController extends Controller
     public function apply_leave(Request $request)
     {
         $user = Auth::user();
+        $validatedData = $request->validate([
+            'visit_to' => 'required',
+            'reason' => 'required',
+        ]);
+        $out_date = date("Y-m-d", $request->input('out_date'));
+        $in_date = date("Y-m-d", $request->input('in_date'));
+        if($out_date == $in_date){
+            throw ValidationException::withMessages([
+                "out_date" => 'Out date and in date cannot be same.'
+            ]);
+        }else if(date($request->input("out_date")) > date($request->input("in_date"))){
+            throw ValidationException::withMessages([
+                "out_date" => 'Out date cannot be after in date.'
+            ]);
+        }
         $create_result = $user->leaves()->create([
-            'out_date' => date("Y-m-d", $request->input('out_date')), 
-            'in_date' => date("Y-m-d", $request->input('in_date')), 
+            'out_date' => $out_date, 
+            'in_date' => $in_date, 
             'visit_to' => $request->input('visit_to'), 
             'reason' => $request->input('reason'),
         ]);
-        return response()->json(["status" => "success", "data" => $create_result]);
+        return response()->json(["status" => "success", "msg" => "Leave request created successfully", "data" => $create_result]);
     }
 
     public function update_outing(Request $request)
