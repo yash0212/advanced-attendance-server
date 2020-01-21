@@ -44,16 +44,29 @@ class LeaveOutingController extends Controller
     public function apply_outing(Request $request)
     {
         $user = Auth::user();
+        $validatedData = $request->validate([
+            'visit_to' => 'required',
+            'reason' => 'required',
+        ]);
         $out_time = (new \DateTime())->setTimestamp($request->input('out_time'));
         $in_time = (new \DateTime())->setTimestamp($request->input('in_time'));
+        if($out_time == $in_time){
+            throw ValidationException::withMessages([
+                "out_time" => 'Out time and in time cannot be same.'
+            ]);
+        }else if(date($request->input("out_time")) > date($request->input("in_time"))){
+            throw ValidationException::withMessages([
+                "out_time" => 'Out time cannot be after in time.'
+            ]);
+        }
         $create_result = $user->outings()->create([
-            'date' => date("Y-m-d", $request->input('date')), 
+            'date' => date("Y-m-d", (new \DateTime())->getTimestamp()), 
             'out_time' => $out_time, 
             'in_time' => $in_time, 
             'visit_to' => $request->input('visit_to'), 
             'reason' => $request->input('reason'),
         ]);
-        return response()->json(["status" => "success", "data" => $create_result]);
+        return response()->json(["status" => "success","msg" => "Outing request created successfully", "data" => $create_result]);
     }
 
     public function apply_leave(Request $request)
