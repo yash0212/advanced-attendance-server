@@ -13,7 +13,7 @@ class AuthController extends Controller
             'email' => 'required|email|unique:users',
             'name' => 'required|max:255',
             'password' => 'required|confirmed',
-            'regno' => 'required|max:255',
+            'regno' => 'max:255',
         ]);
         $validatedData["password"] = bcrypt($validatedData["password"]);
         $validatedData["user_type"] = $request->input("user_type");

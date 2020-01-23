@@ -8,6 +8,8 @@ use App\Outing;
 use App\Leave;
 use Auth;
 use Illuminate\Validation\ValidationException;
+use Encrypto;
+use Decrypto;
 
 class LeaveOutingController extends Controller
 {
@@ -156,4 +158,31 @@ class LeaveOutingController extends Controller
         }
     }
 
+    public function verify_leave_outing(Request $request)
+    {
+        if($request->input('hash') !== null &&strlen($request->input('hash')) === 100){
+            $hash = $request->input('hash');
+            $obj = new Decrypto();
+            $result = $obj->decpCode($hash,2);
+            if($result["status"] == 1){
+                $requestType = $result["data"][0];
+                $id = $result["data"][1];
+                if($requestType == 'leave'){
+                    $data = Leave::where('id', $id)->with('applied_by')->first();
+                }else{
+                    $data = Outing::where('id', $id)->with('applied_by')->first();
+                }
+                if($data !== null){
+                    return response()->json(["status"=>"success", "data"=>$data]);
+                }else{
+                    return response()->json(["status"=>"error", "msg"=>"Leave/Outing request doesn't exist"]);
+                }
+            }else {
+                return response()->json(["status"=>"error", "msg"=>"Invalid Code. Please Try Again."]);
+            }
+        }else{
+            return response()->json(["status"=>"error", "msg"=>"Invalid Code"]);
+        }
+        var_dump($request->all());die;
+    }
 }
