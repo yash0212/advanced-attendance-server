@@ -23,8 +23,35 @@ class UsersTableSeeder extends Seeder
         ]);
         DB::table('users')->insert([
             'name' => "Jesse Pinkman",
-            'email' => 's@s.com',
+            'email' => 's1@s.com',
             'user_type' => 1,
+            'regno' => 'RA1611003030281',
+            'degree' => 'B.Tech.',
+            'department' => 'CSE',
+            'section' => 'E',
+            'year' => 4,
+            'password' => Hash::make('s'),
+        ]);
+        DB::table('users')->insert([
+            'name' => "Student 2",
+            'email' => 's2@s.com',
+            'user_type' => 1,
+            'regno' => 'RA1611003030282',
+            'degree' => 'B.Tech.',
+            'department' => 'CSE',
+            'section' => 'E',
+            'year' => 4,
+            'password' => Hash::make('s'),
+        ]);
+        DB::table('users')->insert([
+            'name' => "Student 3",
+            'email' => 's3@s.com',
+            'user_type' => 1,
+            'regno' => 'RA1611003030283',
+            'degree' => 'B.Tech.',
+            'department' => 'CSE',
+            'section' => 'E',
+            'year' => 4,
             'password' => Hash::make('s'),
         ]);
         DB::table('users')->insert([

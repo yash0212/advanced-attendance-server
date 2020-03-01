@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'regno', 'user_type', 'secret'
+        'name', 'email', 'password', 'regno', 'degree', 'department', 'section', 'year', 'user_type', 'secret', 
     ];
 
     /**
@@ -38,19 +38,33 @@ class User extends Authenticatable
         'email_verified_at' => 'datetime',
     ];
 
+    //Function to fetch outing requests for students
     function outings(){
         return $this->hasMany('App\Outing', 'applied_by', 'id');
     }
 
+    //Function to getch leave requests for students
     function leaves(){
         return $this->hasMany('App\Leave', 'applied_by', 'id');
     }
 
+    //Function to fetch outing requests for admin
     function admin_outing(){
         return $this->hasMany('App\Outing', 'approved_by', 'id');
     }
 
+    //Function to fetch leave requests for admin
     function admin_leave(){
         return $this->hasMany('App\Leave', 'approved_by', 'id');
+    }
+
+    //Function to fetch attendance marked by teacher
+    function marked_attendances(){
+        return $this->hasMany('App\Attendance', 'marked_by', 'id');
+    }
+
+    // Function to fetch student's attendance
+    function attendances(){
+        return $this->hasMany('App\Attendance', 'student_id', 'id');
     }
 }
