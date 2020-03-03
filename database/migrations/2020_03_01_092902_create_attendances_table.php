@@ -23,6 +23,7 @@ class CreateAttendancesTable extends Migration
             $table->integer('year');
             $table->integer('marked_by');
             $table->integer('student_id');
+            $table->integer('attendance_status');
             $table->date('date');
             $table->timestamps();
         });
