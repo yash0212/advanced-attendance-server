@@ -4,6 +4,7 @@
 use App\User;
 use Faker\Generator as Faker;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Hash;
 
 /*
 |--------------------------------------------------------------------------
@@ -19,9 +20,43 @@ use Illuminate\Support\Str;
 $factory->define(User::class, function (Faker $faker) {
     return [
         'name' => $faker->name,
-        'email' => $faker->unique()->safeEmail,
         'email_verified_at' => now(),
-        'password' => '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', // password
         'remember_token' => Str::random(10),
+    ];
+});
+$factory->state(User::class, 'student', function (Faker $faker) {
+    $sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    $years = [1, 2, 3, 4];
+    static $ruid = 1;
+    
+    return [
+        'email' => 's'.$ruid++.'@s.com',
+        'user_type' => 1,
+        'regno' => "$faker->randomNumber",
+        'degree' => 'B.Tech.',
+        'department' => 'CSE',
+        'section' => $sections[array_rand($sections)],
+        'year' => $years[array_rand($years)],
+        'password' => Hash::make('s'),
+    ];
+});
+
+$factory->state(User::class, 'teacher', function (Faker $faker) {
+    static $ruid = 1;
+    
+    return [
+        'email' => 't'.$ruid++.'@t.com',
+        'user_type' => 2,
+        'password' => Hash::make('t'),
+    ];
+});
+
+$factory->state(User::class, 'guard', function (Faker $faker) {
+    static $ruid = 1;
+    
+    return [
+        'email' => 'g'.$ruid++.'@g.com',
+        'user_type' => 3,
+        'password' => Hash::make('g'),
     ];
 });
