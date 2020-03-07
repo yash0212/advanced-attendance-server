@@ -17,10 +17,6 @@ class CreateAttendancesTable extends Migration
             $table->bigIncrements('id');
             $table->integer('lecture_number');
             $table->string('subject_id');
-            $table->string('degree');
-            $table->string('department');
-            $table->string('section');
-            $table->integer('year');
             $table->integer('marked_by');
             $table->integer('student_id');
             $table->integer('attendance_status');

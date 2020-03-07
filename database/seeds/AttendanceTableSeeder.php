@@ -64,10 +64,6 @@ class AttendanceTableSeeder extends Seeder
 							Attendance::create([
 								'lecture_number' => $lno,
 								'subject_id' => $subject_codes[$year-1][$lno-1],
-								'degree' => 'B.Tech.',
-								'department' => 'CSE',
-								'section' => $section,
-								'year' => $year,
 								'marked_by' => $t_id,
 								'student_id' => $student['id'],
 								'attendance_status' => rand(0,1),
