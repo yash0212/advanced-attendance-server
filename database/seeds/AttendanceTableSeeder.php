@@ -57,7 +57,7 @@ class AttendanceTableSeeder extends Seeder
 		foreach ($dates as $date) {
 			for ($year = 1; $year <= 4; $year++) { 
 				foreach ($sections as $section) {
-					$students = User::select('id', 'name', 'regno')->where('degree', 'B.Tech.')->where('department', 'CSE')->where('section', $section)->where('year', $year)->orderBy('name', 'asc')->get();
+					$students = User::select('id', 'name', 'regno')->where('degree_id', 1)->where('department_id', 1)->where('section', $section)->where('year', $year)->orderBy('name', 'asc')->get();
 					for ($lno = 1; $lno <= 4; $lno++) { 
 						$t_id = $teachers[array_rand($teachers)];
 						foreach($students as $student){

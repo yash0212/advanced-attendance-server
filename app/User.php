@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'regno', 'degree', 'department', 'section', 'year', 'user_type', 'secret', 
+        'name', 'email', 'password', 'regno', 'degree_id', 'department_id', 'section', 'year', 'user_type', 'secret', 
     ];
 
     /**
@@ -37,6 +37,16 @@ class User extends Authenticatable
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    //Function to fetch degree of students
+    function degree() {
+        return $this->belongsTo('App\Degree');
+    }
+
+    //Function to fetch department of students
+    function department() {
+        return $this->belongsTo('App\Department');
+    }
 
     //Function to fetch outing requests for students
     function outings(){
