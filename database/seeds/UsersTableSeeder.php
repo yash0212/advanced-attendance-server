@@ -21,7 +21,7 @@ class UsersTableSeeder extends Seeder
             'user_type' => 0,
             'password' => Hash::make('a'),
         ]);
-        $students = factory(User::class, 500)->states('student')->create();
+        $students = factory(User::class, 200)->states('student')->create();
         $teachers = factory(User::class, 5)->states('teacher')->create();
         $guards = factory(User::class, 3)->states('guard')->create();
     }

@@ -25,7 +25,7 @@ $factory->define(User::class, function (Faker $faker) {
     ];
 });
 $factory->state(User::class, 'student', function (Faker $faker) {
-    $sections = ['A', 'B', 'C', 'D', 'E', 'F', 'G'];
+    $sections = ['A', 'B', 'C', 'D'];
     $years = [1, 2, 3, 4];
     static $ruid = 1;
     

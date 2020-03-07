@@ -5,6 +5,8 @@ use App\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use App\Subject;
+use App\Attendance;
 
 class AttendanceTableSeeder extends Seeder
 {
@@ -15,13 +17,21 @@ class AttendanceTableSeeder extends Seeder
      */
     public function run()
     {
+		$subjects = Subject::select('id')->get();
+		$s = [];
+		foreach ($subjects as $subject) {
+			if(!is_null($subject['id'])){
+				array_push($s, $subject['id']);
+			}
+		}
+		$subjects = $s;
 		$subject_codes = [
-			['15CS101', '15CS102', '15CS103' , '15CS104', '15CS105', '15CS106', '15CS107' , '15CS108'],
-			['15CS201', '15CS202', '15CS203' , '15CS204', '15CS205', '15CS206', '15CS207' , '15CS208'],
-			['15CS301', '15CS302', '15CS303' , '15CS304', '15CS305', '15CS306', '15CS307' , '15CS308'],
-			['15CS401', '15CS402', '15CS403' , '15CS404', '15CS405', '15CS406', '15CS407' , '15CS408']
+			[1, 2, 3, 4],
+			[5, 6, 7, 8],
+			[9, 10, 11, 12],
+			[13, 14, 15, 16]
 		];
-		$teachers = User::select('id')->where('user_type', 1)->get();
+		$teachers = User::select('id')->where('user_type', 2)->get();
 		$t = [];
 		foreach ($teachers as $teacher) {
 				array_push($t, $teacher['id']);
@@ -48,12 +58,12 @@ class AttendanceTableSeeder extends Seeder
 			for ($year = 1; $year <= 4; $year++) { 
 				foreach ($sections as $section) {
 					$students = User::select('id', 'name', 'regno')->where('degree', 'B.Tech.')->where('department', 'CSE')->where('section', $section)->where('year', $year)->orderBy('name', 'asc')->get();
-					for ($lno = 1; $lno <= 8; $lno++) { 
+					for ($lno = 1; $lno <= 4; $lno++) { 
 						$t_id = $teachers[array_rand($teachers)];
 						foreach($students as $student){
-							\App\Attendance::create([
+							Attendance::create([
 								'lecture_number' => $lno,
-								'subject_code' => $subject_codes[$year-1][$lno-1],
+								'subject_id' => $subject_codes[$year-1][$lno-1],
 								'degree' => 'B.Tech.',
 								'department' => 'CSE',
 								'section' => $section,

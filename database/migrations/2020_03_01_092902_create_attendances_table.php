@@ -16,7 +16,7 @@ class CreateAttendancesTable extends Migration
         Schema::create('attendances', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->integer('lecture_number');
-            $table->string('subject_code');
+            $table->string('subject_id');
             $table->string('degree');
             $table->string('department');
             $table->string('section');

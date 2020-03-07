@@ -17,4 +17,8 @@ class Attendance extends Model
     function marked_for(){
         return $this->belongsTo('App\User', 'student_id');
     }
+
+    function subject(){
+        return $this->belongsTo('App\Subject');
+    }
 }
