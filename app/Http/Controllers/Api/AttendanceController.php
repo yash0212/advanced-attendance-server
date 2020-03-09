@@ -7,25 +7,65 @@ use Illuminate\Http\Request;
 use Auth;
 use App\User;
 use App\Attendance;
+use Encrypto;
+use Decrypto;
+use App\Subject;
+use App\Degree;
+use App\Department;
 
 class AttendanceController extends Controller
 {
-    public function fetch_students_detail(Request $request)
-    {
-        $degree = $request->input('degree');
-        $department = $request->input('department');
+    // Function for teacher to fetch attendance details 
+    public function fetch_students_attendance_detail(Request $request) {
+        //Parse input data
+        $degree = Degree::where('name', $request->input('degree'))->first();
+        $department = Department::where('name', $request->input('department'))->first();
+        $subject = Subject::where('name', $request->input('subject_code'))->first();
         $section = $request->input('section');
         $year = $request->input('year');
-        $students = User::select('id', 'name', 'regno')->where('degree', $degree)->where('department', $department)->where('section', $section)->where('year', $year)->orderBy('name', 'asc')->get();
-        if(!empty($students)){
-            return response()->json(["status"=>"success", "students_data"=>$students]);
+        $lecture_number = $request->input('lecture_no');
+        $user = Auth::user();
+        $attendance_data = [];
+
+        //Check for empty inputs
+        if(!is_null($degree) && !is_null($department) && !is_null($subject) && isset($section, $year, $lecture_number)) {
+            $date = (new \DateTime())->format('Y-m-d');
+            //Find all students of the class
+            $students = User::select('id', 'name', 'regno')
+                                ->where([
+                                    ['degree_id', $degree['id']],
+                                    ['department_id', $department['id']],
+                                    ['section', $section],
+                                    ['year', $year]
+                                ])
+                                ->orderBy('name', 'asc')
+                                ->get();
+
+            //Fetch attendance of student or create if it doesn't exist
+            foreach ($students as $student) {
+                $att = Attendance::select('student_id', 'attendance_status')->firstOrCreate([
+                        'student_id' => $student['id'],
+                        'lecture_number' => $lecture_number,
+                        'date' => $date
+                    ],[
+                        'subject_id' => $subject['id'],
+                        'marked_by' => $user['id'],
+                        'attendance_status' => 0
+                    ]);
+                $att['name'] = $student['name'];
+                $att['regno'] = $student['regno'];
+                array_push($attendance_data, $att);
+            }
+
+            // Return the response
+            return response()->json(["status"=>"success", "attendance_data"=>$attendance_data]);
         }else{
-            return response()->json(["status"=>"error", "msg"=>"Student not found"]);
+            return response()->json(["status"=>"error", "msg"=>"Degree/Deparment incorrect"]);
         }
     }
 
-    public function submit_attendance(Request $request)
-    {
+    // Deprecated
+    public function submit_attendance(Request $request) {
         $lecture_number = $request->input('lecture_number');
         $subject_code = $request->input('subject_code');
         $degree = $request->input('degree');
@@ -78,12 +118,114 @@ class AttendanceController extends Controller
         }
     }
 
-    public function student_view_attendance(Request $request)
-    {
+    // Function to mark attendance of by student
+    public function student_mark_attendance(Request $request) {
+        $obj = new Decrypto();
+        //lect no., subject id, teacher id, degree, dept, sec, year
+        $result = $obj->decpCode($request->input('code'),7);
         $student = Auth::user();
-        $attendances = $student->attendances()->select(['attendance_status','subject_code'])->where('year', $student->year)->get()->groupBy('subject_code');
+        if($result["status"] == 1){
+            //Parse decrypted data
+            $lecture_no = $result['data'][0];
+            $subject_id = $result['data'][1];
+            $teacher_id = $result['data'][2];
+            $degree = $result['data'][3];
+            $department = $result['data'][4];
+            $section = $result['data'][5];
+            $year = $result['data'][6];
+
+            //Check if student is of same class as teacher marking attendance
+            if($student['degree_id'] == $degree && $student['department_id'] == $department && $student['section'] == chr(ord('A')+$section-1) && $student['year'] == $year) {
+                $date = (new \DateTime())->format('Y-m-d');
+                $teacher = User::where('id', $teacher_id)->where('user_type', 2)->first();
+                if($teacher != null) {
+                    $t_id = $teacher['id'];
+                    $att = Attendance::UpdateOrCreate([
+                        'student_id' => $student['id'],
+                        'lecture_number' => intval($lecture_no),
+                        'date' => $date
+                    ],[
+                        'subject_id' => $subject_id,
+                        'marked_by' => $t_id,
+                        'attendance_status' => 1
+                    ]);
+                    return response()->json(['status'=>'success', 'msg'=>'Attendance Marked Successfully']);
+                } else {
+                    // Teacher cannot be found
+                    return response()->json(['status'=>'error', 'msg'=>'Invalid Request']);
+                }
+            }else{
+                // Student does not belong to this class
+                return response()->json(['status'=>'error', 'msg'=>'Invalid Request']);
+            }
+        } else {
+            // Code cannot be decrypted
+            return response()->json(['status'=>'error', 'msg'=>'Invalid Code']);
+        }
+    }
+
+    // Function for teacher to mark students attendance
+    public function teacher_update_attendance(Request $request) {
+        //Parse input data
+        $degree = Degree::where('name', $request->input('degree'))->first();
+        $department = Department::where('name', $request->input('department'))->first();
+        $subject = Subject::where('name', $request->input('subject_code'))->first();
+        $section = $request->input('section');
+        $year = $request->input('year');
+        $lecture_number = $request->input('lecture_no');
+        $user = Auth::user();
+        $attendance_data = $request->input('attendance_data');
+
+        //Check for empty inputs
+        if(!is_null($degree) && !is_null($department) && !is_null($subject) && isset($section, $year, $lecture_number)) {
+            $student_ids = [];
+            $students = User::select('id')
+                                ->where([
+                                    ['degree_id', $degree['id']],
+                                    ['department_id', $department['id']],
+                                    ['section', $section],
+                                    ['year', $year]
+                                ])
+                                ->orderBy('name', 'asc')
+                                ->get();
+
+            // Parse student ids
+            if(count($students) > 0){
+                foreach ($students as $student) {
+                    array_push($student_ids, $student['id']);
+                }
+            }
+            
+            $date = (new \DateTime())->format('Y-m-d');
+            $attendances = [];
+            // Check if student is of given class and then mark attendance
+            foreach ($attendance_data as $att) {
+                if(in_array($att['student_id'], $student_ids)){
+                    $attendance = Attendance::UpdateOrCreate([
+                        'student_id' => $att['student_id'],
+                        'lecture_number' => intval($lecture_number),
+                        'date' => $date
+                    ],[
+                        'subject_id' => $subject['id'],
+                        'marked_by' => $user['id'],
+                        'attendance_status' => $att['attendance_status']
+                    ]);
+                    array_push($attendances, $attendance);
+                }
+            }
+            return response()->json(["status" => "success", 'msg' => 'Attendance Marked Successfully for '.count($attendances).(count($attendances) == 1?' student':' students')]);
+        } else {
+            return response()->json(["status" => "error", 'msg' => 'Missing Parameters']);
+        }
+    }
+
+    // Function for students to view attendance
+    public function student_view_attendance(Request $request) {
+        $student = Auth::user();
+        $attendances = $student->attendances()->select(['attendance_status','subject_id'])->get()->groupBy('subject_id');
         $attendance_data = [];
-        foreach ($attendances as $sub_code => $attendance) {
+        $subject_ids = [];
+        foreach ($attendances as $sub_id => $attendance) {
             $present_count = 0;
             $total_hours = 0;
             foreach ($attendance as $att) {
@@ -92,22 +234,38 @@ class AttendanceController extends Controller
                     $present_count++;
                 }
             }
+            array_push($subject_ids, $sub_id);
             array_push($attendance_data, [
-                'subject_code' => $sub_code,
+                'subject_code' => $sub_id,
                 'attended_hours' => $present_count,
                 'total_hours' => $total_hours,
                 'absent_hours' => $total_hours - $present_count,
             ]);
         }
+
+        $subjects = Subject::whereIn('id', $subject_ids)->get();
+        foreach ($attendance_data as $index => $ad) {
+            foreach ($subjects as $subject) {
+                if($ad['subject_code'] == $subject['id']) {
+                    $attendance_data[$index]['subject_code'] = $subject['name'];
+                }
+            }
+        }
         return response()->json(["status"=>"success", "attendance_data"=>$attendance_data]);
     }
     
-    public function student_view_detailed_attendance(Request $request)
-    {
+    //Function for students to view detailed attendance for a subject
+    public function student_view_detailed_attendance(Request $request) {
         if(!is_null($request->input('subject_code'))){
             $student = Auth::user();
-            $attendances = $student->attendances()->select(['attendance_status', 'date', 'lecture_number'])->where('year', $student->year)->where('subject_code', $request->input('subject_code'))->get();
-            return response()->json(["status"=>"success", "attendance_data"=>$attendances]);
+            $subject = Subject::where('name', $request->input('subject_code'))->first();
+
+            if($subject != NULL) {
+                $attendances = $student->attendances()->select(['attendance_status', 'date', 'lecture_number'])->where('subject_id', $subject['id'])->get();
+                return response()->json(["status"=>"success", "attendance_data"=>$attendances]);
+            }else{
+                return response()->json(['status'=>'error', 'msg' => 'Please provide valid subject code']);
+            }
         }else{
             return response()->json(['status'=>'error', 'msg' => 'Please provide subject code']);
         }

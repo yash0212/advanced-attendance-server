@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class Attendance extends Model
 {
     protected $fillable = [ 
-        'lecture_number', 'subject_code', 'marked_by', 'student_id',
+        'lecture_number', 'subject_id', 'marked_by', 'student_id', 'date', 'attendance_status'
     ];
 
     function marked_by(){

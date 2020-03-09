@@ -28,6 +28,7 @@ Route::group(['middleware' => ['auth:api', 'student']], function () {
     // Route::post('/fetch-leave-code', 'Api\LeaveOutingController@fetch_leave_code');
     Route::get('/student-view-attendance', 'Api\AttendanceController@student_view_attendance');
     Route::get('/student-view-detailed-attendance', 'Api\AttendanceController@student_view_detailed_attendance');
+    Route::post('/student-mark-attendance', 'Api\AttendanceController@student_mark_attendance');
 });
 Route::group(['middleware' => ['auth:api', 'admin']], function () {
     Route::post('/update-outing', 'Api\LeaveOutingController@update_outing');
@@ -37,9 +38,11 @@ Route::group(['middleware' => ['auth:api', 'guard']], function () {
     Route::post('/verify-leave-outing', 'Api\LeaveOutingController@verify_leave_outing');
 });
 Route::group(['middleware' => ['auth:api', 'teacher']], function () {
-    Route::post('/fetch-students-detail', 'Api\AttendanceController@fetch_students_detail');
-    Route::post('/submit-attendance', 'Api\AttendanceController@submit_attendance');
+    Route::post('/fetch-students-detail', 'Api\AttendanceController@fetch_students_attendance_detail');
+    Route::post('/teacher-submit-attendance', 'Api\AttendanceController@teacher_update_attendance');
 });
 
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
+
+Route::post('/test', 'Api\AuthController@test');

@@ -58,13 +58,13 @@ class Encrypto{
     $mat[99]=$k[1];
     $m= '';
     $mat= array_chunk($mat,10);
-    // foreach($mat as $i){
-      // foreach($i as $j){
-      //   print_r($j);
-      //   $m.=$j;
-      // }
+    foreach($mat as $i){
+      foreach($i as $j){
+        // print_r($j);
+        $m.=$j;
+      }
       // echo "\n";
-    // }
+    }
     return $m;
   }
   function getCode(...$vars){
