@@ -45,4 +45,8 @@ Route::group(['middleware' => ['auth:api', 'teacher']], function () {
 Route::post('/register', 'Api\AuthController@register');
 Route::post('/login', 'Api\AuthController@login');
 
+Route::get('/fetch-degrees', 'Api\MiscController@fetch_degrees');
+Route::get('/fetch-departments', 'Api\MiscController@fetch_departments');
+Route::get('/fetch-subjects', 'Api\MiscController@fetch_subjects');
+
 Route::post('/test', 'Api\AuthController@test');

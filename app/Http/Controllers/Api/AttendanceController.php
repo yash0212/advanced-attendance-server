@@ -15,12 +15,12 @@ use App\Department;
 
 class AttendanceController extends Controller
 {
-    // Function for teacher to fetch attendance details 
+    // Function for teacher to fetch attendance details
     public function fetch_students_attendance_detail(Request $request) {
         //Parse input data
-        $degree = Degree::where('name', $request->input('degree'))->first();
-        $department = Department::where('name', $request->input('department'))->first();
-        $subject = Subject::where('name', $request->input('subject_code'))->first();
+        $degree = Degree::where('id', $request->input('degree'))->first();
+        $department = Department::where('id', $request->input('department'))->first();
+        $subject = Subject::where('id', $request->input('subject_code'))->first();
         $section = $request->input('section');
         $year = $request->input('year');
         $lecture_number = $request->input('lecture_no');
@@ -86,7 +86,7 @@ class AttendanceController extends Controller
                     $status = 0;
                     foreach ($attendance_data as $s) {
                         if($student->id === $s['id']){
-                            $status = $s['attStatus'];
+                            $status = $s['$attendance_statuses'];
                             break;
                         }
                     }
@@ -167,12 +167,12 @@ class AttendanceController extends Controller
     // Function for teacher to mark students attendance
     public function teacher_update_attendance(Request $request) {
         //Parse input data
-        $degree = Degree::where('name', $request->input('degree'))->first();
-        $department = Department::where('name', $request->input('department'))->first();
-        $subject = Subject::where('name', $request->input('subject_code'))->first();
+        $degree = Degree::where('id', $request->input('degree'))->first();
+        $department = Department::where('id', $request->input('department'))->first();
+        $subject = Subject::where('id', $request->input('subject_code'))->first();
         $section = $request->input('section');
         $year = $request->input('year');
-        $lecture_number = $request->input('lecture_no');
+        $lecture_number = $request->input('lecture_number');
         $user = Auth::user();
         $attendance_data = $request->input('attendance_data');
 
@@ -195,7 +195,7 @@ class AttendanceController extends Controller
                     array_push($student_ids, $student['id']);
                 }
             }
-            
+
             $date = (new \DateTime())->format('Y-m-d');
             $attendances = [];
             // Check if student is of given class and then mark attendance
@@ -253,7 +253,7 @@ class AttendanceController extends Controller
         }
         return response()->json(["status"=>"success", "attendance_data"=>$attendance_data]);
     }
-    
+
     //Function for students to view detailed attendance for a subject
     public function student_view_detailed_attendance(Request $request) {
         if(!is_null($request->input('subject_code'))){
