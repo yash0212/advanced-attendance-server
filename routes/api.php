@@ -17,11 +17,11 @@ Route::middleware('auth:api')->get('/user', function (Request $request) {
     return $request->user();
 
 });
-Route::group(['middleware' => ['auth:api']], function () {
+Route::group(['middleware' => ['auth:api', 'loginvalidator']], function () {
     Route::get('/fetch-outing', 'Api\LeaveOutingController@fetch_outing');
     Route::get('/fetch-leave', 'Api\LeaveOutingController@fetch_leave');
 });
-Route::group(['middleware' => ['auth:api', 'student']], function () {
+Route::group(['middleware' => ['auth:api', 'student', 'loginvalidator']], function () {
     Route::post('/apply-outing', 'Api\LeaveOutingController@apply_outing');
     Route::post('/apply-leave', 'Api\LeaveOutingController@apply_leave');
     // Route::post('/fetch-outing-code', 'Api\LeaveOutingController@fetch_outing_code');
@@ -30,14 +30,14 @@ Route::group(['middleware' => ['auth:api', 'student']], function () {
     Route::get('/student-view-detailed-attendance', 'Api\AttendanceController@student_view_detailed_attendance');
     Route::post('/student-mark-attendance', 'Api\AttendanceController@student_mark_attendance');
 });
-Route::group(['middleware' => ['auth:api', 'admin']], function () {
+Route::group(['middleware' => ['auth:api', 'admin', 'loginvalidator']], function () {
     Route::post('/update-outing', 'Api\LeaveOutingController@update_outing');
     Route::post('/update-leave', 'Api\LeaveOutingController@update_leave');
 });
-Route::group(['middleware' => ['auth:api', 'guard']], function () {
+Route::group(['middleware' => ['auth:api', 'guard', 'loginvalidator']], function () {
     Route::post('/verify-leave-outing', 'Api\LeaveOutingController@verify_leave_outing');
 });
-Route::group(['middleware' => ['auth:api', 'teacher']], function () {
+Route::group(['middleware' => ['auth:api', 'teacher', 'loginvalidator']], function () {
     Route::post('/fetch-students-detail', 'Api\AttendanceController@fetch_students_attendance_detail');
     Route::post('/teacher-submit-attendance', 'Api\AttendanceController@teacher_update_attendance');
 });

@@ -65,6 +65,7 @@ class Kernel extends HttpKernel
         'student' => \App\Http\Middleware\StudentPermissions::class,
         'teacher' => \App\Http\Middleware\TeacherPermissions::class,
         'guard' => \App\Http\Middleware\GuardPermissions::class,
+        'loginvalidator' => \App\Http\Middleware\LoginValidatorUpdater::class,
     ];
 
     /**
