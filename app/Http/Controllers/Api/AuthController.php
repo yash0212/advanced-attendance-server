@@ -79,7 +79,7 @@ class AuthController extends Controller
                             return response(['user' => $user, 'access_token' => $access_token]);
                         }else{
                             //Restrict user from login
-                            return response(['message'=>'Please try again after sometime']);
+                            return response(['message'=>'Login allowed 10 min after previous logout']);
                         }
                     }
                     //Login user
