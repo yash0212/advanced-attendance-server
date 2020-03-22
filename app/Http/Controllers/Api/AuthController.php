@@ -9,6 +9,7 @@ use App\LoginValidator;
 use Encrypto;
 use Decrypto;
 use Carbon\Carbon;
+use Auth;
 
 class AuthController extends Controller
 {
@@ -34,22 +35,22 @@ class AuthController extends Controller
             'password' => 'required'
         ]);
 
-        if(!auth()->attempt($login_data)){
+        if (!auth()->attempt($login_data)) {
             return response(['message'=>'Invalid Credentials']);
         }
         $user = auth()->user();
 
         // Decrypt device id from device hash
         $obj = new Decrypto();
-        $result = $obj->decpCode($request->input('device_hash'),1);
+        $result = $obj->decpCode($request->input('device_hash'), 1);
         // Check if device hash is valid
-        if($result["status"] == 1){
+        if ($result["status"] == 1) {
             $device_id = $result['data'][0];
             $lv = LoginValidator::where('device_id', $device_id)->orderBy('updated_at', 'desc')->first();
             //Check if device is already used for login
-            if($lv != null){
+            if ($lv != null) {
                 // Check if same user is logging in which was previously logged in
-                if($lv->user_id == $user->id){
+                if ($lv->user_id == $user->id) {
                     $temp_lv = LoginValidator::updateOrCreate([
                         'device_id' => $device_id,
                         'user_id' => $user->id
@@ -58,17 +59,17 @@ class AuthController extends Controller
                     $temp_lv->save();
                     $access_token = $user->createToken('authToken')->accessToken;
                     return response(['user' => $user, 'access_token' => $access_token]);
-                }else{
+                } else {
                     // New user is trying to login into device used by some other user
 
                     // Send sms notification for new login
 
                     // Check if user is student
-                    if($user->user_type == 1){
+                    if ($user->user_type == 1) {
                         $date = $lv->updated_at->timestamp;
                         $now = Carbon::now()->timestamp;
                         //Check if difference in time between loggin si more than 10 mins
-                        if(($now - $date) > 600){
+                        if (($now - $date) > 600) {
                             $temp_lv = LoginValidator::updateOrCreate([
                                 'device_id' => $device_id,
                                 'user_id' => $user->id
@@ -77,7 +78,7 @@ class AuthController extends Controller
                             $temp_lv->save();
                             $access_token = $user->createToken('authToken')->accessToken;
                             return response(['user' => $user, 'access_token' => $access_token]);
-                        }else{
+                        } else {
                             //Restrict user from login
                             return response(['message'=>'Login allowed 10 min after previous logout']);
                         }
@@ -92,7 +93,7 @@ class AuthController extends Controller
                     $access_token = $user->createToken('authToken')->accessToken;
                     return response(['user' => $user, 'access_token' => $access_token]);
                 }
-            }else{
+            } else {
                 // New device login
                 $temp_lv = LoginValidator::updateOrCreate([
                     'device_id' => $device_id,
@@ -103,7 +104,7 @@ class AuthController extends Controller
                 $access_token = $user->createToken('authToken')->accessToken;
                 return response(['user' => $user, 'access_token' => $access_token]);
             }
-        }else{
+        } else {
             //Device hash is invalid
             return response(['message'=>'This device is not supported']);
         }
@@ -112,6 +113,32 @@ class AuthController extends Controller
     public function test(Request $request) {
         $obj = new Encrypto();
         $result = $obj->getCode("04488df45bd570f");
-        var_dump($result);die;
+        var_dump($result);
+        die;
+    }
+
+    public function update_student_phone_number(Request $request) {
+        $regno = $request->input('regno');
+        $s_phno = $request->input('student_phone_number');
+        $p_phno = $request->input('parent_phone_number');
+
+        if (isset($regno, $s_phno, $p_phno) && is_numeric($s_phno) && is_numeric($p_phno)) {
+            $user = Auth::user();
+            $student = User::where('regno', $regno)->first();
+            if ($student != null) {
+                $student->extra_details()->UpdateOrCreate([],[
+                    'student_phone_number' => $s_phno,
+                    'parent_phone_number' => $p_phno
+                ]);
+                return response(['status' => 'success', 'message'=>'Student details updated successfully']);
+            } else {
+                return response(['status' => 'error', 'message'=>'Student not found']);
+            }
+        } else {
+            if(isset($s_phno, $p_phno) && (!is_numeric($s_phno) || !is_numeric($p_phno))) {
+                return response(['status' => 'error', 'message'=>'Phone number should only contain numbers']);
+            }
+            return response(['status' => 'error', 'message'=>'Missing Parameters']);
+        }
     }
 }

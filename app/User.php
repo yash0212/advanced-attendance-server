@@ -17,7 +17,7 @@ class User extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 'email', 'password', 'regno', 'degree_id', 'department_id', 'section', 'year', 'user_type', 'secret', 
+        'name', 'email', 'password', 'regno', 'degree_id', 'department_id', 'section', 'year', 'user_type', 'secret',
     ];
 
     /**
@@ -76,5 +76,10 @@ class User extends Authenticatable
     // Function to fetch student's attendance
     function attendances(){
         return $this->hasMany('App\Attendance', 'student_id', 'id');
+    }
+
+    // Function to fetch student's extra details
+    function extra_details(){
+        return $this->hasOne('App\StudentExtraDetail');
     }
 }
