@@ -60,3 +60,5 @@ Route::get('/fetch-departments', 'Api\MiscController@fetch_departments');
 Route::get('/fetch-subjects', 'Api\MiscController@fetch_subjects');
 
 Route::post('/test', 'Api\AuthController@test');
+Route::post('/get-encrypted-code', 'Api\MiscController@get_encrypted_code');
+Route::post('/get-decrypted-data', 'Api\MiscController@get_decrypted_data');

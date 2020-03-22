@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Subject;
 use App\Degree;
 use App\Department;
+use Encrypto;
+use Decrypto;
 
 class MiscController extends Controller
 {
@@ -26,5 +28,21 @@ class MiscController extends Controller
     public function fetch_subjects(Request $request) {
         $subjects = Subject::select('id', 'name')->get();
         return response()->json(["status" => "success", "data" => $subjects]);
+    }
+
+    //Function to encrypt using encrypto
+    public function get_encrypted_code(Request $request) {
+        $params = $request->input('data');
+        $obj = new Encrypto();
+        $result = $obj->getCode(...$params);
+        return response()->json($result);
+    }
+
+    //Function to encrypt using encrypto
+    public function get_decrypted_data(Request $request) {
+        $params = $request->input('hash');
+        $obj = new Decrypto();
+        $result = $obj->decpCode($params,2);
+        return response()->json($result);
     }
 }
