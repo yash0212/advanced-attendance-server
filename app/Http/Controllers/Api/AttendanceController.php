@@ -58,27 +58,6 @@ class AttendanceController extends Controller
                 $att['name'] = $student['name'];
                 $att['regno'] = $student['regno'];
                 array_push($attendance_data, $att);
-
-                $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject['id'])->get();
-                if(count($attendances) > 0){
-                    $total_hours = 0;
-                    $present_count = 0;
-                    foreach ($attendances as $att) {
-                        $present_count += $att['attendance_status'];
-                        $total_hours++;
-                    }
-                    // Calculate attendance percentage
-                    $att_percentage = $present_count * 100 / $total_hours;
-                    // Check for attendance less than 50%
-                    if($att_percentage < 50) {
-                        // Mail to parent
-                        $mail = new StudentLowAttendance($subject['name'], $total_hours, $present_count);
-                        Mail::to($student->extra_details()->first()->parent_email)->send($mail);
-                        // Mail to student
-                        $selfmail = new StudentSelfLowAttendance($subject['name'], $total_hours, $present_count);
-                        Mail::to($student->email)->send($selfmail);
-                    }
-                }
             }
 
             // Return the response
@@ -262,6 +241,27 @@ class AttendanceController extends Controller
                         'attendance_status' => $att['attendance_status']
                     ]);
                     array_push($attendances, $attendance);
+
+                    $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject['id'])->get();
+                    if(count($attendances) > 0){
+                        $total_hours = 0;
+                        $present_count = 0;
+                        foreach ($attendances as $att) {
+                            $present_count += $att['attendance_status'];
+                            $total_hours++;
+                        }
+                        // Calculate attendance percentage
+                        $att_percentage = $present_count * 100 / $total_hours;
+                        // Check for attendance less than 50%
+                        if($att_percentage < 50) {
+                            // Mail to parent
+                            $mail = new StudentLowAttendance($subject['name'], $total_hours, $present_count);
+                            Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                            // Mail to student
+                            $selfmail = new StudentSelfLowAttendance($subject['name'], $total_hours, $present_count);
+                            Mail::to($student->email)->send($selfmail);
+                        }
+                    }
                 }
             }
             return response()->json(["status" => "success", 'msg' => 'Attendance Marked Successfully for '.count($attendances).(count($attendances) == 1?' student':' students')]);
