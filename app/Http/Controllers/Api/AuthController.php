@@ -112,10 +112,28 @@ class AuthController extends Controller
     }
 
     public function test(Request $request) {
-        $leave = \App\Leave::where('id', 1)->first();
-        $mail = new \App\Mail\StudentLeftCampusLeave($leave);
-        Mail::to('yashlotan7@gmail.com')->send($mail);
-        var_dump($mail);
+        $student = User::where('id',25)->first();
+        $subject_id = $request->input('subject_id');
+        $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject_id)->get();
+        if(count($attendances) > 0){
+            $total_hours = 0;
+            $present_count = 0;
+            foreach ($attendances as $att) {
+                $present_count += $att['attendance_status'];
+                $total_hours++;
+            }
+            $att_percentage = $present_count*100/$total_hours;
+            if($att_percentage < 50) {
+                $subject_name = \App\Subject::where('id', $subject_id)->first()->name;
+                $mail = new \App\Mail\StudentLowAttendance($subject_name, $total_hours, $present_count);
+                Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                $selfmail = new \App\Mail\StudentLowAttendance($subject_name, $total_hours, $present_count);
+                Mail::to($student->email)->send($selfmail);
+            }
+            // var_dump($att_percentage);
+        }
+        return response(['attendances'=>$attendances]);
+        var_dump("YOLO");
         die;
     }
 

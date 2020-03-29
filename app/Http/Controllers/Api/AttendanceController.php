@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Auth;
+use Mail;
 use App\User;
 use App\Attendance;
 use Encrypto;
@@ -12,6 +13,8 @@ use Decrypto;
 use App\Subject;
 use App\Degree;
 use App\Department;
+use App\Mail\StudentLowAttendance;
+use App\Mail\StudentSelfLowAttendance;
 
 class AttendanceController extends Controller
 {
@@ -55,6 +58,27 @@ class AttendanceController extends Controller
                 $att['name'] = $student['name'];
                 $att['regno'] = $student['regno'];
                 array_push($attendance_data, $att);
+
+                $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject['id'])->get();
+                if(count($attendances) > 0){
+                    $total_hours = 0;
+                    $present_count = 0;
+                    foreach ($attendances as $att) {
+                        $present_count += $att['attendance_status'];
+                        $total_hours++;
+                    }
+                    // Calculate attendance percentage
+                    $att_percentage = $present_count * 100 / $total_hours;
+                    // Check for attendance less than 50%
+                    if($att_percentage < 50) {
+                        // Mail to parent
+                        $mail = new StudentLowAttendance($subject['name'], $total_hours, $present_count);
+                        Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                        // Mail to student
+                        $selfmail = new StudentSelfLowAttendance($subject['name'], $total_hours, $present_count);
+                        Mail::to($student->email)->send($selfmail);
+                    }
+                }
             }
 
             // Return the response
@@ -121,8 +145,8 @@ class AttendanceController extends Controller
     // Function to mark attendance of by student
     public function student_mark_attendance(Request $request) {
         $obj = new Decrypto();
-        //lect no., subject id, teacher id, degree, dept, sec, year
-        $result = $obj->decpCode($request->input('code'),7);
+        //lect no., subject id, teacher id, degree, dept, sec, year, type(0=>smart, 1=>QR)
+        $result = $obj->decpCode($request->input('code'),8);
         $student = Auth::user();
         if($result["status"] == 1){
             //Parse decrypted data
@@ -133,8 +157,9 @@ class AttendanceController extends Controller
             $department = $result['data'][4];
             $section = $result['data'][5];
             $year = $result['data'][6];
+            $attendance_type = $result['data'][7];
 
-            //Check if student is of same class as teacher marking attendance
+            // Check if student is of same class as teacher marking attendance
             if($student['degree_id'] == $degree && $student['department_id'] == $department && $student['section'] == chr(ord('A')+$section-1) && $student['year'] == $year) {
                 $date = (new \DateTime())->format('Y-m-d');
                 $teacher = User::where('id', $teacher_id)->where('user_type', 2)->first();
@@ -149,6 +174,32 @@ class AttendanceController extends Controller
                         'marked_by' => $t_id,
                         'attendance_status' => 1
                     ]);
+
+                    // Check if attendance is marked via QR
+                    if($attendance_type == 1) {
+                        // Check for low attendance and send email notification
+                        $subject_name = Subject::where('id', $subject_id)->first()->name;
+                        $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject_id)->get();
+                        if(count($attendances) > 0){
+                            $total_hours = 0;
+                            $present_count = 0;
+                            foreach ($attendances as $att) {
+                                $present_count += $att['attendance_status'];
+                                $total_hours++;
+                            }
+                            // Calculate attendance percentage
+                            $att_percentage = $present_count*100/$total_hours;
+                            // Check for attendance less than 50%
+                            if($att_percentage < 50) {
+                                // Mail to parent
+                                $mail = new StudentLowAttendance($subject_name, $total_hours, $present_count);
+                                Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                                // Mail to student
+                                $selfmail = new StudentSelfLowAttendance($subject_name, $total_hours, $present_count);
+                                Mail::to($student->email)->send($selfmail);
+                            }
+                        }
+                    }
                     return response()->json(['status'=>'success', 'msg'=>'Attendance Marked Successfully']);
                 } else {
                     // Teacher cannot be found
