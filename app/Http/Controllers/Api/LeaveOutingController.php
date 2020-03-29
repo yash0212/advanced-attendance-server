@@ -10,6 +10,9 @@ use Auth;
 use Illuminate\Validation\ValidationException;
 use Encrypto;
 use Decrypto;
+use Mail;
+use App\Mail\StudentLeftCampusOuting;
+use App\Mail\StudentLeftCampusLeave;
 
 class LeaveOutingController extends Controller
 {
@@ -62,10 +65,10 @@ class LeaveOutingController extends Controller
             ]);
         }
         $create_result = $user->outings()->create([
-            'date' => date("Y-m-d", (new \DateTime())->getTimestamp()), 
-            'out_time' => $out_time, 
-            'in_time' => $in_time, 
-            'visit_to' => $request->input('visit_to'), 
+            'date' => date("Y-m-d", (new \DateTime())->getTimestamp()),
+            'out_time' => $out_time,
+            'in_time' => $in_time,
+            'visit_to' => $request->input('visit_to'),
             'reason' => $request->input('reason'),
         ]);
         return response()->json(["status" => "success","msg" => "Outing request created successfully", "data" => $create_result]);
@@ -90,9 +93,9 @@ class LeaveOutingController extends Controller
             ]);
         }
         $create_result = $user->leaves()->create([
-            'out_date' => $out_date, 
-            'in_date' => $in_date, 
-            'visit_to' => $request->input('visit_to'), 
+            'out_date' => $out_date,
+            'in_date' => $in_date,
+            'visit_to' => $request->input('visit_to'),
             'reason' => $request->input('reason'),
         ]);
         return response()->json(["status" => "success", "msg" => "Leave request created successfully", "data" => $create_result]);
@@ -167,20 +170,29 @@ class LeaveOutingController extends Controller
             if($result["status"] == 1){
                 $requestType = $result["data"][0];
                 $id = $result["data"][1];
-                if($requestType == 'leave'){
+                if($requestType == 'leave') {
                     $data = Leave::where('id', $id)->with('applied_by')->first();
-                }else{
+                } else {
                     $data = Outing::where('id', $id)->with('applied_by')->first();
                 }
-                if($data !== null){
+                if($data !== null) {
+                    // Send email notification to parents
+                    $student_ed = \App\StudentExtraDetail::where('user_id', $data['applied_by'])->first();
+                    if($requestType == 'leave') {
+                        $mail = new StudentLeftCampusLeave(Leave::where('id', $id)->first());
+                    } else {
+                        $mail = new StudentLeftCampusOuting(Outing::where('id', $id)->first());
+                    }
+                    Mail::to($student_ed->parent_email)->subject('Student campus left notification')->send($mail);
+
                     return response()->json(["status"=>"success", "data"=>$data]);
-                }else{
+                } else {
                     return response()->json(["status"=>"error", "msg"=>"Leave/Outing request doesn't exist"]);
                 }
-            }else {
+            } else {
                 return response()->json(["status"=>"error", "msg"=>"Invalid Code. Please Try Again."]);
             }
-        }else{
+        } else {
             return response()->json(["status"=>"error", "msg"=>"Invalid Code"]);
         }
         var_dump($request->all());die;

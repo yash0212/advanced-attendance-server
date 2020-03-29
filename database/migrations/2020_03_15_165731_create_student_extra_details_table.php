@@ -18,6 +18,7 @@ class CreateStudentExtraDetailsTable extends Migration
             $table->integer('user_id');
             $table->string('student_phone_number');
             $table->string('parent_phone_number');
+            $table->string('parent_email');
             $table->timestamps();
         });
     }

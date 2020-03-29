@@ -10,6 +10,7 @@ use Encrypto;
 use Decrypto;
 use Carbon\Carbon;
 use Auth;
+use Mail;
 
 class AuthController extends Controller
 {
@@ -111,9 +112,10 @@ class AuthController extends Controller
     }
 
     public function test(Request $request) {
-        $obj = new Encrypto();
-        $result = $obj->getCode("04488df45bd570f");
-        var_dump($result);
+        $leave = \App\Leave::where('id', 1)->first();
+        $mail = new \App\Mail\StudentLeftCampusLeave($leave);
+        Mail::to('yashlotan7@gmail.com')->send($mail);
+        var_dump($mail);
         die;
     }
 
@@ -121,14 +123,16 @@ class AuthController extends Controller
         $regno = $request->input('regno');
         $s_phno = $request->input('student_phone_number');
         $p_phno = $request->input('parent_phone_number');
+        $p_email = $request->input('parent_email');
 
-        if (isset($regno, $s_phno, $p_phno) && is_numeric($s_phno) && is_numeric($p_phno)) {
+        if (isset($regno, $s_phno, $p_phno, $p_email) && is_numeric($s_phno) && is_numeric($p_phno)) {
             $user = Auth::user();
             $student = User::where('regno', $regno)->first();
             if ($student != null) {
                 $student->extra_details()->UpdateOrCreate([],[
                     'student_phone_number' => $s_phno,
-                    'parent_phone_number' => $p_phno
+                    'parent_phone_number' => $p_phno,
+                    'parent_email' => $p_email
                 ]);
                 return response(['status' => 'success', 'message'=>'Student details updated successfully']);
             } else {
