@@ -27,6 +27,7 @@ Route::group(['middleware' => ['auth:api', 'loginvalidator']], function () {
 // Admin routes
 Route::group(['middleware' => ['auth:api', 'admin', 'loginvalidator']], function () {
     Route::post('/update-outing', 'Api\LeaveOutingController@update_outing');
+    Route::post('/update-leave', 'Api\LeaveOutingController@update_leave');
     Route::post('/update-student-phone-number', 'Api\AuthController@update_student_phone_number');
 });
 

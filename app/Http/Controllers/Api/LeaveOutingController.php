@@ -170,7 +170,7 @@ class LeaveOutingController extends Controller
             if($result["status"] == 1){
                 $requestType = $result["data"][0];
                 $id = $result["data"][1];
-                if($requestType == 'leave') {
+                if($requestType == 1) {
                     $data = Leave::where('id', $id)->with('applied_by')->first();
                 } else {
                     $data = Outing::where('id', $id)->with('applied_by')->first();
@@ -183,8 +183,9 @@ class LeaveOutingController extends Controller
                     } else {
                         $mail = new StudentLeftCampusOuting(Outing::where('id', $id)->first());
                     }
-                    Mail::to($student_ed->parent_email)->subject('Student campus left notification')->send($mail);
-
+                    if(isset($student_ed)){
+                        Mail::to($student_ed->parent_email)->subject('Student campus left notification')->send($mail);
+                    }
                     return response()->json(["status"=>"success", "data"=>$data]);
                 } else {
                     return response()->json(["status"=>"error", "msg"=>"Leave/Outing request doesn't exist"]);

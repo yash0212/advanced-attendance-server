@@ -1,13 +1,13 @@
 <?php
 class Encrypto{
-  protected $letterCycle= 'abcdefghijklmnopqrstuvwxyz1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+  protected $letterCycle= 'abdefghijkmnqrty1234567890ABDEFGHJKLMNQRTYabdefghijkmnqrty';
   protected $spchr = '@#$%';
   protected $randArr = '1234567890qwertyuioplkjhgfdsazxcvbnm1234567890POIUYTREWQASDFGHJKLMNBVCXZ';
   private $key,$loc,$rev;
   function __construct(){
-    $this->key= rand(16,25);
+    $this->key= rand(10,16);
     $this->loc= rand(11,30);
-    $this->rev= rand(0,1);
+    $this->rev= rand(2,3);
   }
   function enc1($x){
     $index= strpos($this->letterCycle,$x);
@@ -51,8 +51,8 @@ class Encrypto{
     $loc= array_map(array($this, 'enc1'),str_split(strval($loc)));
     $k= str_split(strval($this->key));
     $k=chr(ord($loc[1])+intval($k[0])).chr(ord($loc[0]) + intval($k[1]));
-    $mat[0]= $this->rev==0?$loc[0]:$loc[1];
-    $mat[1]= $this->rev==0?$loc[1]:$loc[0];
+    $mat[0]= $this->rev==2?$loc[0]:$loc[1];
+    $mat[1]= $this->rev==2?$loc[1]:$loc[0];
     $mat[9]= $this->rev;
     $mat[98]=$k[0];
     $mat[99]=$k[1];
