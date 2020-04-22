@@ -229,7 +229,7 @@ class AttendanceController extends Controller
             }
 
             $date = (new \DateTime())->format('Y-m-d');
-            $attendances = [];
+            $attendances_count = [];
             // Check if student is of given class and then mark attendance
             foreach ($attendance_data as $att) {
                 if(in_array($att['student_id'], $student_ids)){
@@ -242,8 +242,9 @@ class AttendanceController extends Controller
                         'marked_by' => $user['id'],
                         'attendance_status' => $att['attendance_status']
                     ]);
-                    array_push($attendances, $attendance);
+                    array_push($attendances_count, $attendance);
 
+                    $student = User::where('id', $att['student_id'])->first();
                     $attendances = $student->attendances()->select('attendance_status')->where('subject_id', $subject['id'])->get();
                     if(count($attendances) > 0){
                         $total_hours = 0;
@@ -268,7 +269,7 @@ class AttendanceController extends Controller
                     }
                 }
             }
-            return response()->json(["status" => "success", 'msg' => 'Attendance Marked Successfully for '.count($attendances).(count($attendances) == 1?' student':' students')]);
+            return response()->json(["status" => "success", 'msg' => 'Attendance Marked Successfully for '.count($attendances_count).(count($attendances_count) == 1?' student':' students')]);
         } else {
             return response()->json(["status" => "error", 'msg' => 'Missing Parameters']);
         }
