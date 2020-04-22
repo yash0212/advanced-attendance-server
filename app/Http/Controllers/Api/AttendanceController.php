@@ -139,7 +139,7 @@ class AttendanceController extends Controller
             $attendance_type = $result['data'][7];
 
             // Check if student is of same class as teacher marking attendance
-            if($student['degree_id'] == $degree && $student['department_id'] == $department && $student['section'] == chr(ord('A')+$section-1) && $student['year'] == $year) {
+            if($student['degree_id'] == $degree && $student['department_id'] == $department && $student['section'] == $section && $student['year'] == $year) {
                 $date = (new \DateTime())->format('Y-m-d');
                 $teacher = User::where('id', $teacher_id)->where('user_type', 2)->first();
                 if($teacher != null) {
@@ -169,7 +169,7 @@ class AttendanceController extends Controller
                             // Calculate attendance percentage
                             $att_percentage = $present_count*100/$total_hours;
                             // Check for attendance less than 50%
-                            if($att_percentage < 50) {
+                            if($att_percentage < 75) {
                                 // Mail to parent
                                 $mail = new StudentLowAttendance($subject_name, $total_hours, $present_count);
                                 if($student->extra_details()->first() != NULL){
@@ -256,7 +256,7 @@ class AttendanceController extends Controller
                         // Calculate attendance percentage
                         $att_percentage = $present_count * 100 / $total_hours;
                         // Check for attendance less than 50%
-                        if($att_percentage < 50) {
+                        if($att_percentage < 75) {
                             // Mail to parent
                             $mail = new StudentLowAttendance($subject['name'], $total_hours, $present_count);
                             if($student->extra_details()->first() != NULL){

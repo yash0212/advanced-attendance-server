@@ -178,13 +178,13 @@ class LeaveOutingController extends Controller
                 if($data !== null) {
                     // Send email notification to parents
                     $student_ed = \App\StudentExtraDetail::where('user_id', $data['applied_by'])->first();
-                    if($requestType == 'leave') {
+                    if($requestType == 1) {
                         $mail = new StudentLeftCampusLeave(Leave::where('id', $id)->first());
                     } else {
                         $mail = new StudentLeftCampusOuting(Outing::where('id', $id)->first());
                     }
                     if(isset($student_ed)){
-                        Mail::to($student_ed->parent_email)->subject('Student campus left notification')->send($mail);
+                        Mail::to($student_ed->parent_email)->send($mail);
                     }
                     return response()->json(["status"=>"success", "data"=>$data]);
                 } else {

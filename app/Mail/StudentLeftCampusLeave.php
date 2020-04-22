@@ -34,6 +34,6 @@ class StudentLeftCampusLeave extends Mailable
      */
     public function build()
     {
-        return $this->markdown('emails.studentleftcampusleave');
+        return $this->subject('Student campus left notification')->markdown('emails.studentleftcampusleave');
     }
 }

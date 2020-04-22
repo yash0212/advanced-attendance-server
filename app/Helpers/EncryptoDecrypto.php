@@ -97,7 +97,7 @@ class Decrypto extends Encrypto{
   function decpCode($mat,$n){
     try{
       $mat= str_split($mat);
-      $loc= $mat[9]==0?array($mat[0],$mat[1]):array($mat[1],$mat[0]);
+      $loc= $mat[9]==2?array($mat[0],$mat[1]):array($mat[1],$mat[0]);
       $k= array($mat[98],$mat[99]);
       $this->key= intval(strval(ord($k[0])-ord($loc[1])).strval(ord($k[1])-ord($loc[0])));
       $loc= intval(join('',array_map(array($this,'decp1'),$loc)));
