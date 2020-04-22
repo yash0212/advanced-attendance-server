@@ -172,7 +172,9 @@ class AttendanceController extends Controller
                             if($att_percentage < 50) {
                                 // Mail to parent
                                 $mail = new StudentLowAttendance($subject_name, $total_hours, $present_count);
-                                Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                                if($student->extra_details()->first() != NULL){
+                                    Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                                }
                                 // Mail to student
                                 $selfmail = new StudentSelfLowAttendance($subject_name, $total_hours, $present_count);
                                 Mail::to($student->email)->send($selfmail);
@@ -256,7 +258,9 @@ class AttendanceController extends Controller
                         if($att_percentage < 50) {
                             // Mail to parent
                             $mail = new StudentLowAttendance($subject['name'], $total_hours, $present_count);
-                            Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                            if($student->extra_details()->first() != NULL){
+                                Mail::to($student->extra_details()->first()->parent_email)->send($mail);
+                            }
                             // Mail to student
                             $selfmail = new StudentSelfLowAttendance($subject['name'], $total_hours, $present_count);
                             Mail::to($student->email)->send($selfmail);
