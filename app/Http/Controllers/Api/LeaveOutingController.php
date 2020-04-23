@@ -13,6 +13,8 @@ use Decrypto;
 use Mail;
 use App\Mail\StudentLeftCampusOuting;
 use App\Mail\StudentLeftCampusLeave;
+use App\Mail\StudentArriveCampus;
+use Carbon\Carbon;
 
 class LeaveOutingController extends Controller
 {
@@ -166,25 +168,52 @@ class LeaveOutingController extends Controller
         if($request->input('hash') !== null &&strlen($request->input('hash')) === 100){
             $hash = $request->input('hash');
             $obj = new Decrypto();
-            $result = $obj->decpCode($hash,2);
+            $result = $obj->decpCode($hash,3);
             if($result["status"] == 1){
-                $requestType = $result["data"][0];
-                $id = $result["data"][1];
+                $requestType = intval($result["data"][0]);
+                $id = intval($result["data"][1]);
+                $qrType = intval($result["data"][2]);
                 if($requestType == 1) {
                     $data = Leave::where('id', $id)->with('applied_by')->first();
                 } else {
                     $data = Outing::where('id', $id)->with('applied_by')->first();
                 }
-                if($data !== null) {
-                    // Send email notification to parents
-                    $student_ed = \App\StudentExtraDetail::where('user_id', $data['applied_by'])->first();
-                    if($requestType == 1) {
-                        $mail = new StudentLeftCampusLeave(Leave::where('id', $id)->first());
-                    } else {
-                        $mail = new StudentLeftCampusOuting(Outing::where('id', $id)->first());
-                    }
-                    if(isset($student_ed)){
-                        Mail::to($student_ed->parent_email)->send($mail);
+                if($data != NULL) {
+                    //Student leave campus
+                    if($qrType == 1){
+                        if($data->status == 1){
+                            //Update leave/outing status to 3
+                            $data->status = 3;
+                            $data->campus_out_time = Carbon::now();
+                            $data->save();
+                            // Send email notification to parents
+                            $student_ed = \App\StudentExtraDetail::where('user_id', $data['applied_by'])->first();
+                            if(isset($student_ed)){
+                                if($requestType == 1) {
+                                    $mail = new StudentLeftCampusLeave(Leave::where('id', $id)->first());
+                                } else {
+                                    $mail = new StudentLeftCampusOuting(Outing::where('id', $id)->first());
+                                }
+                                Mail::to($student_ed->parent_email)->send($mail);
+                            }
+                        }else{
+                            return response()->json(["status"=>"error", "msg"=>"Leave/Outing request is not correct"]);
+                        }
+                    }else{
+                        //Student arrive campus
+                        if($data->status == 3){
+                            $data->status = 4;
+                            $data->campus_in_time = Carbon::now();
+                            $data->save();
+                            // Send email notification to parents
+                            $student_ed = \App\StudentExtraDetail::where('user_id', $data['applied_by'])->first();
+                            if(isset($student_ed)){
+                                $mail = new StudentArriveCampus();
+                                Mail::to($student_ed->parent_email)->send($mail);
+                            }
+                        }else{
+                            return response()->json(["status"=>"error", "msg"=>"Leave/Outing request is not correct"]);
+                        }
                     }
                     return response()->json(["status"=>"success", "data"=>$data]);
                 } else {

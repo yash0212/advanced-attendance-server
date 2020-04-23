@@ -23,6 +23,8 @@ class CreateOutingsTable extends Migration
             $table->string('reason');
             $table->integer('status')->default(0);
             $table->integer('approved_by')->nullable();
+            $table->timestamp('campus_in_time')->nullable();
+            $table->timestamp('campus_out_time')->nullable();
             $table->timestamps();
         });
     }
