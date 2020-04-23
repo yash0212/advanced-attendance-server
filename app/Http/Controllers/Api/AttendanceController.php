@@ -29,10 +29,9 @@ class AttendanceController extends Controller
         $lecture_number = $request->input('lecture_no');
         $user = Auth::user();
         $attendance_data = [];
-
         //Check for empty inputs
         if(!is_null($degree) && !is_null($department) && !is_null($subject) && isset($section, $year, $lecture_number)) {
-            $date = (new \DateTime())->format('Y-m-d');
+            $date = $request->input('date') ?? (new \DateTime())->format('Y-m-d');
             //Find all students of the class
             $students = User::select('id', 'name', 'regno')
                                 ->where([
