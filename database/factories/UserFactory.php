@@ -28,11 +28,11 @@ $factory->state(User::class, 'student', function (Faker $faker) {
     $sections = ['A', 'B', 'C', 'D'];
     $years = [1, 2, 3, 4];
     static $ruid = 1;
-    
+
     return [
         'email' => 's'.$ruid++.'@s.com',
         'user_type' => 1,
-        'regno' => "$faker->randomNumber",
+        'regno' => "Regno".($ruid-1),
         'degree_id' => 1,
         'department_id' => 1,
         'section' => $sections[array_rand($sections)],
@@ -43,7 +43,7 @@ $factory->state(User::class, 'student', function (Faker $faker) {
 
 $factory->state(User::class, 'teacher', function (Faker $faker) {
     static $ruid = 1;
-    
+
     return [
         'email' => 't'.$ruid++.'@t.com',
         'user_type' => 2,
@@ -53,7 +53,7 @@ $factory->state(User::class, 'teacher', function (Faker $faker) {
 
 $factory->state(User::class, 'guard', function (Faker $faker) {
     static $ruid = 1;
-    
+
     return [
         'email' => 'g'.$ruid++.'@g.com',
         'user_type' => 3,

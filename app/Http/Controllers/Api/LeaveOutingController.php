@@ -227,4 +227,37 @@ class LeaveOutingController extends Controller
         }
         var_dump($request->all());die;
     }
+
+    public function student_not_in_campus(Request $request)
+    {
+        $leaves = Leave::with('applied_by')->where('status',3)->get()->toArray();
+        $outings = Outing::with('applied_by')->where('status', 3)->get()->toArray();
+        $reqs = [];
+        foreach ($leaves as $leave) {
+            array_push($reqs,[
+                'id' => $leave['id'],
+                'student_id' => $leave['applied_by']['id'],
+                'name' => $leave['applied_by']['name'],
+                'student_regno' => $leave['applied_by']['regno'],
+                'req_type' => 1,
+                'out_since' => $leave['campus_out_time'],
+                'visit_to' => $leave['visit_to']
+            ]);
+        }
+        foreach ($outings as $outing) {
+            array_push($reqs,[
+                'id' => $outing['id'],
+                'student_id' => $outing['applied_by']['id'],
+                'name' => $outing['applied_by']['name'],
+                'student_regno' => $outing['applied_by']['regno'],
+                'req_type' => 1,
+                'out_since' => $outing['campus_out_time'],
+                'visit_to' => $outing['visit_to']
+            ]);
+        }
+        usort($reqs, function($a, $b){
+            return Carbon::parse($a['out_since'])->lessThan(Carbon::parse($b['out_since'])) ? -1 : 1;
+        });
+        return response()->json(['status' => 'success', 'students' => $reqs]);
+    }
 }
