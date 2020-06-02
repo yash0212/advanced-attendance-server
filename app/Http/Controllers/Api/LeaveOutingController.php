@@ -250,7 +250,7 @@ class LeaveOutingController extends Controller
                 'student_id' => $outing['applied_by']['id'],
                 'name' => $outing['applied_by']['name'],
                 'student_regno' => $outing['applied_by']['regno'],
-                'req_type' => 1,
+                'req_type' => 0,
                 'out_since' => $outing['campus_out_time'],
                 'visit_to' => $outing['visit_to']
             ]);
